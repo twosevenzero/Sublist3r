@@ -4,6 +4,8 @@ Sublist3r is a python tool designed to enumerate subdomains of websites using OS
 
 [subbrute](https://github.com/TheRook/subbrute) was integrated with Sublist3r to increase the possibility of finding more subdomains using bruteforce with an improved wordlist. The credit goes to TheRook who is the author of subbrute.
 
+Original version: https://github.com/aboul3la/Sublist3r
+
 ## Screenshots
 
 ![Sublist3r](http://www.secgeek.net/images/Sublist3r.png "Sublist3r in action")
@@ -12,7 +14,7 @@ Sublist3r is a python tool designed to enumerate subdomains of websites using OS
 ## Installation
 
 ```
-git clone https://github.com/aboul3la/Sublist3r.git
+git clone https://github.com/huntergregal/Sublist3r.git
 ```
 
 ## Recommended Python Version:
@@ -102,16 +104,33 @@ c:\python27\python.exe -m pip install win_unicode_console colorama
 
 ## Usage
 
-Short Form    | Long Form     | Description
-------------- | ------------- |-------------
--d            | --domain      | Domain name to enumerate subdomains of
--b            | --bruteforce  | Enable the subbrute bruteforce module
--p            | --ports       | Scan the found subdomains against specific tcp ports
--v            | --verbose     | Enable the verbose mode and display results in realtime
--t            | --threads     | Number of threads to use for subbrute bruteforce
--e            | --engines     | Specify a comma-separated list of search engines
--o            | --output      | Save the results to text file
--h            | --help        | show the help message and exit
+```
+usage: sublist3r.py [-h] -d DOMAIN [-b [BRUTEFORCE]] [-p PORTS] [-v [VERBOSE]] [-t THREADS] [-e ENGINES] [-o OUTPUT]
+                    [-vt VIRUSTOTAL_APIKEY] [-n]
+
+OPTIONS:
+  -h, --help            show this help message and exit
+  -d DOMAIN, --domain DOMAIN
+                        Domain name to enumerate it's subdomains
+  -b [BRUTEFORCE], --bruteforce [BRUTEFORCE]
+                        Enable the subbrute bruteforce module
+  -p PORTS, --ports PORTS
+                        Scan the found subdomains against specified tcp ports
+  -v [VERBOSE], --verbose [VERBOSE]
+                        Enable Verbosity and display results in realtime
+  -t THREADS, --threads THREADS
+                        Number of threads to use for subbrute bruteforce
+  -e ENGINES, --engines ENGINES
+                        Specify a comma-separated list of search engines
+  -o OUTPUT, --output OUTPUT
+                        Save the results to text file
+  -vt VIRUSTOTAL_APIKEY, --virustotal_apikey VIRUSTOTAL_APIKEY
+                        Virustotal API Key
+  -n, --no-color        Output without color
+
+Example: python ./sublist3r.py -d google.com
+
+```
 
 ### Examples
 
@@ -180,4 +199,4 @@ Sublist3r is licensed under the GNU GPL license. take a look at the [LICENSE](ht
 * Special Thanks to [Ibrahim Mosaad](https://twitter.com/ibrahim_mosaad) for his great contributions that helped in improving the tool.
 
 ## Version
-**Current version is 1.0**
+**Current version is 1.2**
