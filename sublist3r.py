@@ -645,7 +645,7 @@ class DNSdumpster(enumratorBaseThreaded):
         self.lock = threading.BoundedSemaphore(value=70)
         resp = self.req('GET', self.base_url)
         token = self.get_csrftoken(resp)
-        params = {'csrfmiddlewaretoken': token, 'targetip': self.domain}
+        params = {'csrfmiddlewaretoken': token, 'targetip': self.domain, 'user': 'free'}
         post_resp = self.req('POST', self.base_url, params)
         self.extract_domains(post_resp)
         for subdomain in self.subdomains:
