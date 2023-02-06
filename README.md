@@ -105,8 +105,7 @@ c:\python27\python.exe -m pip install win_unicode_console colorama
 ## Usage
 
 ```
-usage: sublist3r.py [-h] -d DOMAIN [-b [BRUTEFORCE]] [-p PORTS] [-v [VERBOSE]] [-t THREADS] [-e ENGINES] [-o OUTPUT]
-                    [-vt VIRUSTOTAL_APIKEY] [-n]
+usage: sublist3r.py [-h] -d DOMAIN [-b [BRUTEFORCE]] [-p PORTS] [-v [VERBOSE]] [-s [SILENT]] [-t THREADS] [-e ENGINES] [-o OUTPUT] [-vt VIRUSTOTAL_APIKEY] [-n]
 
 OPTIONS:
   -h, --help            show this help message and exit
@@ -118,6 +117,8 @@ OPTIONS:
                         Scan the found subdomains against specified tcp ports
   -v [VERBOSE], --verbose [VERBOSE]
                         Enable Verbosity and display results in realtime
+  -s [SILENT], --silent [SILENT]
+                        Disable Verbosity and run the script silently
   -t THREADS, --threads THREADS
                         Number of threads to use for subbrute bruteforce
   -e ENGINES, --engines ENGINES
@@ -129,7 +130,6 @@ OPTIONS:
   -n, --no-color        Output without color
 
 Example: python ./sublist3r.py -d google.com
-
 ```
 
 ### Examples
