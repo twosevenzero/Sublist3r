@@ -5,6 +5,7 @@
 
 # modules in standard library
 import re
+import dns
 import sys
 import os
 import argparse
@@ -78,7 +79,7 @@ def banner():
                 \___ \| | | | '_ \| | / __| __| |_ \| '__|
                  ___) | |_| | |_) | | \__ \ |_ ___) | |
                 |____/ \__,_|_.__/|_|_|___/\__|____/|_|%s%s
-
+                
                 # Coded By Ahmed Aboul-Ela - @aboul3la
     """ % (R, W, Y))
 
@@ -99,9 +100,11 @@ def parse_args():
     parser.add_argument('-b', '--bruteforce', help='Enable the subbrute bruteforce module', nargs='?', default=False)
     parser.add_argument('-p', '--ports', help='Scan the found subdomains against specified tcp ports')
     parser.add_argument('-v', '--verbose', help='Enable Verbosity and display results in realtime', nargs='?', default=False)
+    parser.add_argument('-s', '--silent', help='Disable Verbosity and run the script silently', nargs='?', default=False)
     parser.add_argument('-t', '--threads', help='Number of threads to use for subbrute bruteforce', type=int, default=30)
     parser.add_argument('-e', '--engines', help='Specify a comma-separated list of search engines')
     parser.add_argument('-o', '--output', help='Save the results to text file')
+    parser.add_argument('-vt', '--virustotal_apikey', help='Virustotal API Key', default='<your-apikey>')
     parser.add_argument('-n', '--no-color', help='Output without color', default=False, action='store_true')
     return parser.parse_args()
 
@@ -152,10 +155,10 @@ class enumratorBase(object):
         self.silent = silent
         self.verbose = verbose
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
+            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
         }
         self.print_banner()
 
@@ -608,10 +611,10 @@ class DNSdumpster(enumratorBaseThreaded):
     def check_host(self, host):
         is_valid = False
         Resolver = dns.resolver.Resolver()
-        Resolver.nameservers = ['8.8.8.8', '8.8.4.4']
+        Resolver.nameservers = ['8.8.8.8', '8.8.4.4'] # 8.8.8.8 you can change to 1.1.1.1
         self.lock.acquire()
         try:
-            ip = Resolver.query(host, 'A')[0].to_text()
+            ip = dns.resolver.Resolver.resolve(host, 'A')[0].to_text()
             if ip:
                 if self.verbose:
                     self.print_("%s%s: %s%s" % (R, self.engine_name, W, host))
@@ -645,7 +648,7 @@ class DNSdumpster(enumratorBaseThreaded):
         self.lock = threading.BoundedSemaphore(value=70)
         resp = self.req('GET', self.base_url)
         token = self.get_csrftoken(resp)
-        params = {'csrfmiddlewaretoken': token, 'targetip': self.domain}
+        params = {'csrfmiddlewaretoken': token, 'targetip': self.domain, 'user': 'free'}
         post_resp = self.req('POST', self.base_url, params)
         self.extract_domains(post_resp)
         for subdomain in self.subdomains:
@@ -676,17 +679,26 @@ class DNSdumpster(enumratorBaseThreaded):
 class Virustotal(enumratorBaseThreaded):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         subdomains = subdomains or []
-        base_url = 'https://www.virustotal.com/ui/domains/{domain}/subdomains'
+        base_url = 'https://www.virustotal.com/api/v3/domains/{domain}/subdomains'
         self.engine_name = "Virustotal"
         self.q = q
         super(Virustotal, self).__init__(base_url, self.engine_name, domain, subdomains, q=q, silent=silent, verbose=verbose)
         self.url = self.base_url.format(domain=self.domain)
+
+        # Virustotal requires specific headers to bypass the bot detection:
+        self.headers["X-Tool"] = "vt-ui-main"
+        self.headers["X-VT-Anti-Abuse-Header"] = "hm"  # as of 1/20/2022, the content of this header doesn't matter, just its presence
+        self.headers["Accept-Ianguage"] = self.headers["Accept-Language"]  # this header being present is required to prevent a captcha
+
         return
 
     # the main send_req need to be rewritten
     def send_req(self, url):
         try:
-            resp = self.session.get(url, headers=self.headers, timeout=self.timeout)
+            global vt_apikey
+            headers = dict(self.headers)
+            headers['x-apikey'] = vt_apikey
+            resp = self.session.get(url, headers=headers, timeout=self.timeout)
         except Exception as e:
             self.print_(e)
             resp = None
@@ -987,6 +999,7 @@ def main(domain, threads, savefile, ports, silent, verbose, enable_bruteforce, e
 
 
 def interactive():
+    global vt_apikey
     args = parse_args()
     domain = args.domain
     threads = args.threads
@@ -995,12 +1008,17 @@ def interactive():
     enable_bruteforce = args.bruteforce
     verbose = args.verbose
     engines = args.engines
+    vt_apikey = args.virustotal_apikey
     if verbose or verbose is None:
         verbose = True
+    silent = args.silent
     if args.no_color:
         no_color()
-    banner()
-    res = main(domain, threads, savefile, ports, silent=False, verbose=verbose, enable_bruteforce=enable_bruteforce, engines=engines)
+    if silent:
+        verbose = False
+    else:
+        banner()
+    res = main(domain, threads, savefile, ports, silent=silent, verbose=verbose, enable_bruteforce=enable_bruteforce, engines=engines)
 
 if __name__ == "__main__":
     interactive()
