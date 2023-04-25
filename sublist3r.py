@@ -183,7 +183,7 @@ class enumratorBase(object):
 
     def get_response(self, response):
         if response is None:
-            return 0
+            return "{}"
         return response.text if hasattr(response, "text") else response.content
 
     def check_max_subdomains(self, count):
